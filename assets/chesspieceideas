@@ -1,0 +1,8 @@
+Medic:
+    Only unlockable through pawn convertion.
+
+    After unlocked it's purpose is to go to the location where a piece died,
+    you can revive that piece at that location but sacrifice your medic.
+
+    Moves like a king and if two pieces die at the same spot,
+    YOU CAN't REVIVE BOTH OF THEM, you will have to choose between one.

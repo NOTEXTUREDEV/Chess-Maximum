@@ -9,7 +9,7 @@ chess.pieces = {}
 require('betterlove')
 require('atlas')
 
--- converts the algebraic chess notation into a row and column variables
+-- converts the algebraic chess notation into a row and column variables,
 -- or the other way around
 function acn_convert(...)
     local inputs = {...}
@@ -35,9 +35,26 @@ function chess.piece.new(location,type,team)
     self.location = location or "a1"
     self.type = type or "p"
     self.team = team or "white"
+    self.move_count = 0
     self.legal_moves = {}
 
     table.insert(chess.pieces,self)
+end
+
+function chess.piece:change_move_count()
+    self.move_count = self.move_count + 1
+end
+
+function chess.piece:change_location(l)
+    self.location = l
+end
+
+function chess.piece:add_legal_move(lm)
+    if string.len(lm) ~= 2 then return end
+    if tonumber(string.sub(lm,2,2)) > 8 then return end
+    if tonumber(string.sub(lm,2,2)) < 1 then return end
+
+    table.insert(self.legal_moves,lm)
 end
 
 -- gets legal moves and stores it in the legal_moves table
@@ -47,8 +64,20 @@ function chess.piece:get_legal_moves()
     end
 
     local row, col = acn_convert(self.location)
-    table.insert(self.legal_moves,acn_convert(row + 1,col))
-    table.insert(self.legal_moves,acn_convert(row - 1,col))
+    self:add_legal_move(acn_convert(row,col + 1))
+    if self.team == "black" then
+        self:add_legal_move(acn_convert(row + 1,col))
+
+        if self.move_count == 0 then
+            self:add_legal_move(acn_convert(row + 2,col))
+        end
+    else
+        self:add_legal_move(acn_convert(row - 1,col))
+
+        if self.move_count == 0 then
+            self:add_legal_move(acn_convert(row - 2,col))
+        end
+    end
 end
 
 -- draws chess piece
@@ -59,7 +88,13 @@ function chess.piece:draw()
     local xx, xy, sx, sy = asset:getViewport()
 
     local x = ((col * 100) + (25 - (sx / 2))) - 100
-    local y = (row * 100) - 120
+    local y = (row * 100) - 100
+
+    if self.type == "p" then
+        y = y - 23
+    else
+        y = y - 10
+    end
 
     bl.drawImage(asset,x,y,0,5,5)
 end
